@@ -6,10 +6,22 @@ import { env } from "./config/env.js";
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://192.168.1.67:5173",
+  env.frontendUrl,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: env.frontendUrl,
-    credentials: true
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+    },
+    credentials: true,
   })
 );
 
@@ -22,7 +34,7 @@ app.use("/api", router);
 app.use((req, res) => {
   res.status(404).json({
     ok: false,
-    message: "Ruta no encontrada"
+    message: "Ruta no encontrada",
   });
 });
 
@@ -33,7 +45,7 @@ app.use((err, req, res, next) => {
 
   res.status(status).json({
     ok: false,
-    message: err.message || "Error interno del servidor"
+    message: err.message || "Error interno del servidor",
   });
 });
 

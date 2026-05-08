@@ -6,16 +6,18 @@ import { env } from "./config/env.js";
 
 const app = express();
 
+const normalizeOrigin = (origin) => origin?.replace(/\/$/, "");
+
 const allowedOrigins = [
   "http://localhost:5173",
   "http://192.168.1.67:5173",
-  env.frontendUrl,
+  normalizeOrigin(env.frontendUrl),
 ].filter(Boolean);
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
         return callback(null, true);
       }
 

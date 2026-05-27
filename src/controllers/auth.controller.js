@@ -2,7 +2,10 @@ import {
   registerUser,
   loginUser,
   createPasswordResetRequest,
-  updatePasswordWithToken
+  updatePasswordWithToken,
+  updateUserProfile,
+  updateUserAddress,
+  changeUserPassword
 } from "../services/auth.service.js";
 
 export async function register(req, res, next) {
@@ -50,6 +53,51 @@ export async function requestPasswordReset(req, res, next) {
 export async function resetPassword(req, res, next) {
   try {
     await updatePasswordWithToken(req.body);
+
+    res.json({
+      ok: true,
+      message: "Contraseña actualizada correctamente"
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/* =========================
+   PROFILE
+========================= */
+
+export async function updateProfile(req, res, next) {
+  try {
+    const user = await updateUserProfile(req.body);
+
+    res.json({
+      ok: true,
+      message: "Perfil actualizado correctamente",
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateAddress(req, res, next) {
+  try {
+    const user = await updateUserAddress(req.body);
+
+    res.json({
+      ok: true,
+      message: "Dirección actualizada correctamente",
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function changePassword(req, res, next) {
+  try {
+    await changeUserPassword(req.body);
 
     res.json({
       ok: true,

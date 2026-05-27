@@ -7,7 +7,11 @@ function sanitizeUser(user) {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: user.role.toLowerCase()
+    role: user.role.toLowerCase(),
+    phone: user.phone || "",
+    address: user.address || "",
+    city: user.city || "",
+    department: user.department || ""
   };
 }
 
@@ -144,6 +148,106 @@ export async function updatePasswordWithToken(payload) {
       passwordHash,
       resetPasswordToken: null,
       resetPasswordExpiresAt: null
+    }
+  });
+}
+
+/* =========================
+   PROFILE
+========================= */
+
+export async function updateUserProfile(payload) {
+  const email = payload?.email?.trim().toLowerCase();
+  const name = payload?.name?.trim();
+  const phone = payload?.phone?.trim() || null;
+
+  if (!email) {
+    throw createHttpError("El email es obligatorio", 400);
+  }
+
+  if (!name) {
+    throw createHttpError("El nombre es obligatorio", 400);
+  }
+
+  const user = await prisma.user.update({
+    where: { email },
+    data: {
+      name,
+      phone
+    }
+  });
+
+  return sanitizeUser(user);
+}
+
+export async function updateUserAddress(payload) {
+  const email = payload?.email?.trim().toLowerCase();
+  const address = payload?.address?.trim() || null;
+  const city = payload?.city?.trim() || null;
+  const department = payload?.department?.trim() || null;
+
+  if (!email) {
+    throw createHttpError("El email es obligatorio", 400);
+  }
+
+  if (!address) {
+    throw createHttpError("La dirección es obligatoria", 400);
+  }
+
+  const user = await prisma.user.update({
+    where: { email },
+    data: {
+      address,
+      city,
+      department
+    }
+  });
+
+  return sanitizeUser(user);
+}
+
+export async function changeUserPassword(payload) {
+  const email = payload?.email?.trim().toLowerCase();
+  const currentPassword = payload?.currentPassword || "";
+  const newPassword = payload?.newPassword || "";
+
+  if (!email || !currentPassword || !newPassword) {
+    throw createHttpError(
+      "Email, contraseña actual y nueva contraseña son obligatorios",
+      400
+    );
+  }
+
+  if (newPassword.length < 6) {
+    throw createHttpError(
+      "La nueva contraseña debe tener al menos 6 caracteres",
+      400
+    );
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  if (!user) {
+    throw createHttpError("Usuario no encontrado", 404);
+  }
+
+  const isValidPassword = await bcrypt.compare(
+    currentPassword,
+    user.passwordHash
+  );
+
+  if (!isValidPassword) {
+    throw createHttpError("La contraseña actual no es correcta", 401);
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
+    where: { email },
+    data: {
+      passwordHash
     }
   });
 }

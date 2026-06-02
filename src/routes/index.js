@@ -1,8 +1,10 @@
 import { Router } from "express";
+
 import productRoutes from "./product.routes.js";
 import authRoutes from "./auth.routes.js";
 import orderRoutes from "./order.routes.js";
 import reviewRoutes from "./review.routes.js";
+import reportRoutes from "./report.routes.js";
 
 const router = Router();
 
@@ -25,5 +27,8 @@ router.use("/products", productRoutes);
 router.use("/auth", authRoutes);
 router.use("/orders", orderRoutes);
 router.use("/reviews", reviewRoutes);
+
+// Reportes para vendedores
+router.use("/reports", reportRoutes);
 
 export default router;
